@@ -8,6 +8,21 @@ def add_message(request, level, message, extra_tags='', fail_silently=False, sub
         notify.email(level, message, extra_tags, subject, user, from_user)
     return request._messages.add(level, message, extra_tags, subject, user, from_user, expires, close_timeout)
 
+def add_async_message(level, message, extra_tags='',
+                      fail_silently=False, subject='', user=None, email=False,
+                      from_user=None, expires=None, close_timeout=None):
+    from persistent_messages.models import Message
+    if not user:
+        raise Exception("User must be supplied to async message")
+    if email:
+        notify.email(level, message, extra_tags, subject, user, from_user)
+    message = Message(user=user, level=level, message=message,
+                      extra_tags=extra_tags, subject=subject,
+                      from_user=from_user, expires=expires,
+                      close_timeout=close_timeout)
+    message.save()
+    return message
+
 def info(request, message, extra_tags='', fail_silently=False, subject='', user=None, email=False, from_user=None, expires=None, close_timeout=None):
     """
     """
